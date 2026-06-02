@@ -30,6 +30,13 @@
 - Run `pnpm build` before considering extension behavior complete.
 - For browser behavior, load `dist/` in Chrome or Edge with Developer mode enabled and test on image posts.
 
+## Testing
+
+- Test observable behavior, not implementation details.
+- Prefer tests that keep passing when internals change but external behavior stays the same.
+- Avoid coupling tests to private helper structure unless the helper is a stable module boundary.
+- Keep tests focused on user-visible outcomes, message contracts, generated filenames, URL normalization, and persistence behavior.
+
 ## Code Style
 
 - Use TypeScript with explicit types at module boundaries.
