@@ -1,7 +1,7 @@
 const BUTTON_SIZE = 34;
 const BUTTON_MARGIN = 8;
 
-export type SaveButtonState = "saving" | "saved" | "skipped" | "failed";
+export type SaveButtonState = "idle" | "saving" | "saved" | "skipped" | "failed";
 
 export type SaveButton = {
   element: HTMLButtonElement;
@@ -49,6 +49,11 @@ export function createSaveButton(): SaveButton {
       button:hover {
         background: rgba(2, 6, 23, 0.96);
       }
+
+      button:disabled {
+        cursor: progress;
+        opacity: 0.86;
+      }
     </style>
     <button type="button" title="Save image" aria-label="Save image">↓</button>
   `;
@@ -82,6 +87,13 @@ export function createSaveButton(): SaveButton {
 }
 
 function setButtonState(button: HTMLButtonElement, state: SaveButtonState): void {
+  button.disabled = state === "saving";
+
+  if (state === "idle") {
+    button.textContent = "↓";
+    return;
+  }
+
   if (state === "saving") {
     button.textContent = "...";
     return;
@@ -94,8 +106,4 @@ function setButtonState(button: HTMLButtonElement, state: SaveButtonState): void
   } else {
     button.textContent = "!";
   }
-
-  window.setTimeout(() => {
-    button.textContent = "↓";
-  }, 900);
 }

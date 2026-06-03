@@ -1,4 +1,6 @@
+import { getContentImageKey } from "./image-key";
 import { getEligibleImage, getVisibleImageRect, isPointInsideRect } from "./image-visibility";
+import { createImageSaveStateStore } from "./save-state";
 import { createSaveButton } from "./save-button";
 
 type SaveResponse =
@@ -28,6 +30,7 @@ let pointerY: number | null = null;
 let visibilityUpdateFrame: number | null = null;
 
 const saveButton = createSaveButton();
+const imageSaveStates = createImageSaveStateStore();
 
 document.addEventListener("mouseover", (event) => {
   const image = getEligibleImage(event.target);
@@ -83,9 +86,20 @@ saveButton.element.addEventListener("click", async (event) => {
     return;
   }
 
-  const info = buildImageInfo(currentImage);
+  const targetImage = currentImage;
+  const imageKey = getContentImageKey(targetImage.currentSrc || targetImage.src);
+
+  if (imageSaveStates.isSaving(imageKey)) {
+    void logContent("info", "Ignoring duplicate save click while image is saving.", {
+      imageKey,
+    });
+    return;
+  }
+
+  const info = buildImageInfo(targetImage);
   void logContent("info", "Save button clicked.", info);
-  saveButton.setState("saving");
+  imageSaveStates.set(imageKey, "saving");
+  updateVisibleButtonState(imageKey);
 
   let response: SaveResponse;
 
@@ -96,7 +110,8 @@ saveButton.element.addEventListener("click", async (event) => {
     })) as SaveResponse;
   } catch (error) {
     void logContent("error", "Save request failed before receiving a response.", error);
-    saveButton.setState("failed");
+    imageSaveStates.set(imageKey, "failed");
+    updateVisibleButtonState(imageKey);
     return;
   }
 
@@ -107,11 +122,13 @@ saveButton.element.addEventListener("click", async (event) => {
   );
 
   if (response.ok) {
-    saveButton.setState(response.skipped ? "skipped" : "saved");
+    imageSaveStates.set(imageKey, response.skipped ? "skipped" : "saved");
+    updateVisibleButtonState(imageKey);
     return;
   }
 
-  saveButton.setState("failed");
+  imageSaveStates.set(imageKey, "failed");
+  updateVisibleButtonState(imageKey);
 
   if (response.reason === "folder-not-selected" || response.reason === "permission-denied") {
     await chrome.runtime.sendMessage({ type: "OPEN_OPTIONS" });
@@ -145,6 +162,9 @@ function updateButtonVisibility(): void {
     return;
   }
 
+  saveButton.setState(
+    imageSaveStates.get(getContentImageKey(currentImage.currentSrc || currentImage.src)),
+  );
   saveButton.showForViewportRect(imageRect);
 }
 
@@ -168,6 +188,17 @@ function clearButtonTarget(): void {
   currentImage = null;
   pointerX = null;
   pointerY = null;
+}
+
+function updateVisibleButtonState(imageKey: string): void {
+  if (
+    !currentImage ||
+    getContentImageKey(currentImage.currentSrc || currentImage.src) !== imageKey
+  ) {
+    return;
+  }
+
+  updateButtonVisibility();
 }
 
 function buildImageInfo(image: HTMLImageElement): ImageInfo {
