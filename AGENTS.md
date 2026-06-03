@@ -10,6 +10,7 @@
 - Prefer the existing TypeScript/Vite structure and current module boundaries.
 - Do not introduce new runtime dependencies unless they clearly reduce complexity.
 - Do not commit generated build output unless explicitly requested.
+- Follow `CONTRIBUTING.md` for contribution workflow and Conventional Commit messages.
 
 ## Extension Constraints
 
