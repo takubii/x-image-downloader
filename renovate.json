@@ -7,7 +7,8 @@
     {
       "description": "Keep CI on the floating Node 24 major instead of pinning a generated patch version.",
       "matchManagers": ["github-actions"],
-      "matchPackageNames": ["node"],
+      "matchDepTypes": ["uses-with"],
+      "matchDepNames": ["node"],
       "enabled": false
     },
     {
