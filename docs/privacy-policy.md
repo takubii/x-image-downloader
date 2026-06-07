@@ -24,4 +24,5 @@ Users can change or clear the save folder from the extension popup.
 
 ## Contact
 
-Replace this section with the store publisher contact information before publication.
+For questions about this extension or privacy policy, open an issue at:
+https://github.com/takubii/x-image-downloader/issues
