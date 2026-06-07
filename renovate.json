@@ -5,10 +5,11 @@
   "rangeStrategy": "bump",
   "packageRules": [
     {
-      "description": "Keep CI on the floating Node 24 major instead of pinning a generated patch version.",
+      "description": "Keep CI on floating Node major versions instead of pinning generated minor or patch versions.",
       "matchManagers": ["github-actions"],
       "matchDepTypes": ["uses-with"],
       "matchDepNames": ["node"],
+      "matchUpdateTypes": ["pin", "minor", "patch"],
       "enabled": false
     },
     {
