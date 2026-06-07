@@ -7,13 +7,12 @@ x-image-downloader saves X/Twitter post images to a local folder selected by the
 - Save folder handle: stored locally so images can be saved to the selected folder.
 - Extension settings: stored with Chrome extension storage.
 - Saved filename records: stored locally to support duplicate-file behavior.
-- Developer diagnostic logs: stored locally while diagnostics are enabled. These logs can include image URLs, page URLs, and error details.
 
 ## Data Collection And Sharing
 
 x-image-downloader does not collect, sell, or share user data.
 
-The extension does not send saved images, image URLs, page URLs, settings, folder information, or diagnostic logs to the developer or to third-party services.
+The extension does not send saved images, image URLs, page URLs, settings, or folder information to the developer or to third-party services.
 
 ## Network Access
 
@@ -21,7 +20,7 @@ The extension accesses X/Twitter pages and X/Twitter image URLs only to detect i
 
 ## User Control
 
-Users can change or clear the save folder from the extension popup. Developer diagnostic logs can be cleared from the full options page.
+Users can change or clear the save folder from the extension popup.
 
 ## Contact
 

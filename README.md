@@ -18,7 +18,7 @@ Chrome/Edge extension for saving X/Twitter post images to a local folder.
 
 ## How To Use
 
-1. Build the extension, or obtain a packaged copy.
+1. Build the extension for local testing, or obtain a packaged copy.
    ```powershell
    pnpm install
    pnpm build
@@ -39,12 +39,15 @@ Open the extension popup from the toolbar icon.
 - **Duplicate behavior**: overwrite, skip, or rename when a filename already exists.
 - **Prefer original image quality**: save the original image variant when available.
 
-Full settings and developer diagnostics are available from the options page.
+Full settings are available from the options page.
+
+Developer diagnostics are shown only in local builds created with `pnpm build`.
+Release packages created with `pnpm package` hide diagnostics.
 
 ## Current Scope
 
 - Image posts are supported.
-- Videos, GIFs, bulk save UI, and store packaging are not supported yet.
+- Videos, GIFs, and bulk save UI are not supported yet.
 
 ## License
 

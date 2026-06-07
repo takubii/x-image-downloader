@@ -5,14 +5,15 @@
   "license": "MIT",
   "type": "module",
   "scripts": {
-    "build": "vite build",
-    "dev": "vite build --watch",
+    "build": "vite build --mode extension-local",
+    "build:release": "vite build --mode production",
+    "dev": "vite build --watch --mode extension-local",
     "format": "oxfmt --write .",
     "format:check": "oxfmt --check .",
     "icons": "node scripts/generate-icons.mjs",
     "knip": "knip",
     "lint": "oxlint . --deny-warnings --vitest-plugin",
-    "package": "pnpm build && node scripts/package-extension.mjs",
+    "package": "pnpm build:release && node scripts/package-extension.mjs",
     "test": "vitest run",
     "type": "tsc --noEmit"
   },

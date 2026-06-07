@@ -1,4 +1,5 @@
 import type { DebugLogEntry, DebugLogLevel, DebugLogSource, RuntimeMessage } from "./messages";
+import { isLocalBuild } from "./build-flags";
 
 const DEBUG_LOG_STORAGE_KEY = "debugLogs";
 const MAX_DEBUG_LOGS = 200;
@@ -19,6 +20,10 @@ export function createDebugLogEntry(
 }
 
 export function writeDebugConsole(entry: DebugLogEntry): void {
+  if (!isLocalBuild) {
+    return;
+  }
+
   const text = `[x-image-downloader] [${entry.source}] ${entry.message}`;
   const details = entry.details ? JSON.parse(entry.details) : undefined;
 
@@ -46,6 +51,10 @@ export async function sendDebugLog(
   message: string,
   details?: unknown,
 ): Promise<void> {
+  if (!isLocalBuild) {
+    return;
+  }
+
   const entry = createDebugLogEntry(source, level, message, details);
   writeDebugConsole(entry);
 
@@ -70,6 +79,10 @@ export async function sendDebugLog(
 }
 
 export async function appendDebugLog(entry: DebugLogEntry): Promise<void> {
+  if (!isLocalBuild) {
+    return;
+  }
+
   if (typeof chrome === "undefined" || !chrome.storage?.local) {
     return;
   }
@@ -83,6 +96,10 @@ export async function appendDebugLog(entry: DebugLogEntry): Promise<void> {
 }
 
 export async function readDebugLogs(): Promise<DebugLogEntry[]> {
+  if (!isLocalBuild) {
+    return [];
+  }
+
   if (typeof chrome === "undefined" || !chrome.storage?.local) {
     return [];
   }
@@ -94,6 +111,10 @@ export async function readDebugLogs(): Promise<DebugLogEntry[]> {
 }
 
 export async function clearDebugLogs(): Promise<void> {
+  if (!isLocalBuild) {
+    return;
+  }
+
   if (typeof chrome === "undefined" || !chrome.storage?.local) {
     return;
   }

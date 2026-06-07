@@ -1,5 +1,6 @@
 import "./options.css";
 
+import { isLocalBuild } from "../shared/build-flags";
 import { clearDebugLogs, readDebugLogs, sendDebugLog } from "../shared/debug-log";
 import { getBrowserLanguage, getUiMessages, resolveLocale } from "../shared/locale";
 import type { LanguageSetting, UiMessages } from "../shared/locale";
@@ -21,6 +22,7 @@ const preferOriginalImage = getElement<HTMLInputElement>("preferOriginalImage");
 const chooseFolder = getElement<HTMLButtonElement>("chooseFolder");
 const clearFolder = getElement<HTMLButtonElement>("clearFolder");
 const saveStatus = getElement<HTMLParagraphElement>("saveStatus");
+const developerDiagnostics = getElement<HTMLDetailsElement>("developerDiagnostics");
 const refreshLogs = getElement<HTMLButtonElement>("refreshLogs");
 const clearLogs = getElement<HTMLButtonElement>("clearLogs");
 const debugLogs = getElement<HTMLPreElement>("debugLogs");
@@ -102,21 +104,29 @@ preferOriginalImage.addEventListener("change", () => {
   });
 });
 
-refreshLogs.addEventListener("click", () => {
-  void renderDebugLogs();
-});
+if (isLocalBuild) {
+  developerDiagnostics.hidden = false;
 
-clearLogs.addEventListener("click", async () => {
-  await clearDebugLogs();
-  await logOptions("info", "Debug logs cleared.");
-  await renderDebugLogs();
-});
+  refreshLogs.addEventListener("click", () => {
+    void renderDebugLogs();
+  });
+
+  clearLogs.addEventListener("click", async () => {
+    await clearDebugLogs();
+    await logOptions("info", "Debug logs cleared.");
+    await renderDebugLogs();
+  });
+} else {
+  developerDiagnostics.remove();
+}
 
 async function init(): Promise<void> {
   [settings, folderState] = await Promise.all([getSettings(), getFolderState()]);
   syncControls();
   render();
-  await renderDebugLogs();
+  if (isLocalBuild) {
+    await renderDebugLogs();
+  }
 }
 
 async function updateSettings(next: Partial<Settings>): Promise<void> {
@@ -124,7 +134,7 @@ async function updateSettings(next: Partial<Settings>): Promise<void> {
   await saveSettings(next);
   syncControls();
   render();
-  if ("language" in next) {
+  if (isLocalBuild && "language" in next) {
     await renderDebugLogs();
   }
   setSaveStatus(messages.settingsSaved);

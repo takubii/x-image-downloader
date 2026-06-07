@@ -3,7 +3,10 @@ import { defineConfig } from "vite";
 
 const inputPath = (path: string) => fileURLToPath(new URL(path, import.meta.url));
 
-export default defineConfig({
+export default defineConfig(({ mode }) => ({
+  define: {
+    __LOCAL_BUILD__: JSON.stringify(mode === "extension-local"),
+  },
   publicDir: "public",
   build: {
     emptyOutDir: true,
@@ -27,4 +30,4 @@ export default defineConfig({
       },
     },
   },
-});
+}));
