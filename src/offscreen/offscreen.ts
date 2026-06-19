@@ -6,6 +6,8 @@ import {
 } from "../shared/file-system-db";
 import { sendDebugLog } from "../shared/debug-log";
 import { getImageKey, getImageMetadata, toOriginalImageUrl } from "../shared/image-url";
+import { normalizeMediaType } from "../shared/media-type";
+import type { MediaType } from "../shared/media-type";
 import type { RuntimeMessage, SaveImagePayload, SaveImageResponse } from "../shared/messages";
 import type { Settings } from "../shared/settings";
 
@@ -33,10 +35,13 @@ async function saveImage(
   payload: SaveImagePayload,
   settings: Settings,
 ): Promise<SaveImageResponse> {
-  const directoryHandle = await getDirectoryHandle();
+  const mediaType = normalizeMediaType(payload.mediaType);
+  const directoryHandle = await getDirectoryHandle(mediaType);
 
   if (!directoryHandle) {
-    void logOffscreen("warn", "No save folder handle found in IndexedDB.");
+    void logOffscreen("warn", "No save folder handle found in IndexedDB.", {
+      mediaType,
+    });
     return {
       ok: false,
       error: "Save folder is not selected.",
@@ -73,6 +78,7 @@ async function saveImage(
     base,
     ext: metadata.ext,
     imageKey,
+    mediaType,
     duplicateBehavior: settings.duplicateBehavior,
   });
 
@@ -92,7 +98,7 @@ async function saveImage(
   const writable = await fileHandle.createWritable();
   await writable.write(blob);
   await writable.close();
-  await saveSavedFileRecord({ filename, imageKey });
+  await saveSavedFileRecord({ filename, imageKey }, mediaType);
 
   void logOffscreen("info", "Image file saved.", { filename });
   return { ok: true, filename };
@@ -147,6 +153,7 @@ type ResolveFilenameInput = {
   base: string;
   ext: string;
   imageKey: string;
+  mediaType: MediaType;
   duplicateBehavior: "overwrite" | "skip" | "rename";
 };
 
@@ -166,7 +173,7 @@ async function resolveFilename(input: ResolveFilenameInput): Promise<string | nu
     return findAvailableFilename(input.directoryHandle, input.base, input.ext);
   }
 
-  const savedRecord = await getSavedFileRecord(initialFilename);
+  const savedRecord = await getSavedFileRecord(initialFilename, input.mediaType);
 
   if (!savedRecord || savedRecord.imageKey === input.imageKey) {
     return initialFilename;

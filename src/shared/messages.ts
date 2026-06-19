@@ -1,8 +1,10 @@
 import type { Settings } from "./settings";
+import type { MediaType } from "./media-type";
 
 export type SaveImagePayload = {
   imageUrl: string;
   pageUrl: string;
+  mediaType?: MediaType;
   author?: string;
   tweetId?: string;
 };

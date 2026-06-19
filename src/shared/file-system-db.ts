@@ -1,43 +1,108 @@
+import { DEFAULT_MEDIA_TYPE } from "./media-type";
+import type { MediaType } from "./media-type";
+
 const DB_NAME = "x-image-downloader";
 const DB_VERSION = 1;
 const HANDLE_STORE = "handles";
 const SAVED_FILE_STORE = "savedFiles";
-const DIRECTORY_KEY = "save-directory";
+const LEGACY_DIRECTORY_KEY = "save-directory";
+const DIRECTORY_KEY_PREFIX = "save-directory";
 
 export type SavedFileRecord = {
   filename: string;
   imageKey: string;
+  mediaType?: MediaType;
 };
 
-export async function saveDirectoryHandle(handle: FileSystemDirectoryHandle): Promise<void> {
+export function getDirectoryStorageKey(mediaType: MediaType = DEFAULT_MEDIA_TYPE): string {
+  return `${DIRECTORY_KEY_PREFIX}:${mediaType}`;
+}
+
+export function getSavedFileRecordStorageKey(
+  filename: string,
+  mediaType: MediaType = DEFAULT_MEDIA_TYPE,
+): string {
+  return `${mediaType}:${filename}`;
+}
+
+export async function saveDirectoryHandle(
+  handle: FileSystemDirectoryHandle,
+  mediaType: MediaType = DEFAULT_MEDIA_TYPE,
+): Promise<void> {
   const db = await openDatabase();
-  await putValue(db, HANDLE_STORE, handle, DIRECTORY_KEY);
+  await putValue(db, HANDLE_STORE, handle, getDirectoryStorageKey(mediaType));
   db.close();
 }
 
-export async function getDirectoryHandle(): Promise<FileSystemDirectoryHandle | null> {
+export async function getDirectoryHandle(
+  mediaType: MediaType = DEFAULT_MEDIA_TYPE,
+): Promise<FileSystemDirectoryHandle | null> {
   const db = await openDatabase();
-  const handle = await getValue<FileSystemDirectoryHandle>(db, HANDLE_STORE, DIRECTORY_KEY);
+  const handle = await getValue<FileSystemDirectoryHandle>(
+    db,
+    HANDLE_STORE,
+    getDirectoryStorageKey(mediaType),
+  );
+
+  if (handle || mediaType !== DEFAULT_MEDIA_TYPE) {
+    db.close();
+    return handle ?? null;
+  }
+
+  const legacyHandle = await getValue<FileSystemDirectoryHandle>(
+    db,
+    HANDLE_STORE,
+    LEGACY_DIRECTORY_KEY,
+  );
   db.close();
-  return handle ?? null;
+  return legacyHandle ?? null;
 }
 
-export async function clearDirectoryHandle(): Promise<void> {
+export async function clearDirectoryHandle(
+  mediaType: MediaType = DEFAULT_MEDIA_TYPE,
+): Promise<void> {
   const db = await openDatabase();
-  await deleteValue(db, HANDLE_STORE, DIRECTORY_KEY);
+  await deleteValue(db, HANDLE_STORE, getDirectoryStorageKey(mediaType));
+
+  if (mediaType === DEFAULT_MEDIA_TYPE) {
+    await deleteValue(db, HANDLE_STORE, LEGACY_DIRECTORY_KEY);
+  }
+
   db.close();
 }
 
-export async function getSavedFileRecord(filename: string): Promise<SavedFileRecord | null> {
+export async function getSavedFileRecord(
+  filename: string,
+  mediaType: MediaType = DEFAULT_MEDIA_TYPE,
+): Promise<SavedFileRecord | null> {
   const db = await openDatabase();
-  const record = await getValue<SavedFileRecord>(db, SAVED_FILE_STORE, filename);
+  const record = await getValue<SavedFileRecord>(
+    db,
+    SAVED_FILE_STORE,
+    getSavedFileRecordStorageKey(filename, mediaType),
+  );
+
+  if (record || mediaType !== DEFAULT_MEDIA_TYPE) {
+    db.close();
+    return record ?? null;
+  }
+
+  const legacyRecord = await getValue<SavedFileRecord>(db, SAVED_FILE_STORE, filename);
   db.close();
-  return record ?? null;
+  return legacyRecord ?? null;
 }
 
-export async function saveSavedFileRecord(record: SavedFileRecord): Promise<void> {
+export async function saveSavedFileRecord(
+  record: SavedFileRecord,
+  mediaType: MediaType = DEFAULT_MEDIA_TYPE,
+): Promise<void> {
   const db = await openDatabase();
-  await putValue(db, SAVED_FILE_STORE, record, record.filename);
+  await putValue(
+    db,
+    SAVED_FILE_STORE,
+    { ...record, mediaType },
+    getSavedFileRecordStorageKey(record.filename, mediaType),
+  );
   db.close();
 }
 

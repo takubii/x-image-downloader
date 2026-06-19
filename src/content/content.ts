@@ -20,6 +20,7 @@ type DebugLogEntry = {
 type ImageInfo = {
   imageUrl: string;
   pageUrl: string;
+  mediaType: "image";
   author?: string;
   tweetId?: string;
 };
@@ -207,6 +208,7 @@ function buildImageInfo(image: HTMLImageElement): ImageInfo {
   return {
     imageUrl: image.currentSrc || image.src,
     pageUrl: location.href,
+    mediaType: "image",
     author: statusInfo.author,
     tweetId: statusInfo.tweetId,
   };

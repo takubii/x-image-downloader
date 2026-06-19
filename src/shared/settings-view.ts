@@ -1,5 +1,7 @@
 import { clearDirectoryHandle, getDirectoryHandle, saveDirectoryHandle } from "./file-system-db";
 import type { UiMessages } from "./locale";
+import { DEFAULT_MEDIA_TYPE } from "./media-type";
+import type { MediaType } from "./media-type";
 
 export type FolderState =
   | { kind: "missing" }
@@ -20,8 +22,10 @@ export type ChooseFolderResult =
   | { ok: false; reason: "cancelled" | "permission-not-granted"; folderState: FolderState }
   | { ok: false; reason: "failed"; error: unknown; folderState: FolderState };
 
-export async function getFolderState(): Promise<FolderState> {
-  const directoryHandle = await getDirectoryHandle();
+export async function getFolderState(
+  mediaType: MediaType = DEFAULT_MEDIA_TYPE,
+): Promise<FolderState> {
+  const directoryHandle = await getDirectoryHandle(mediaType);
 
   if (!directoryHandle) {
     return { kind: "missing" };
@@ -36,7 +40,9 @@ export async function getFolderState(): Promise<FolderState> {
   return { kind: "permission-required", name: directoryHandle.name };
 }
 
-export async function chooseSaveFolder(): Promise<ChooseFolderResult> {
+export async function chooseSaveFolder(
+  mediaType: MediaType = DEFAULT_MEDIA_TYPE,
+): Promise<ChooseFolderResult> {
   try {
     const handle = await window.showDirectoryPicker({ mode: "readwrite" });
     const permission = await handle.requestPermission({ mode: "readwrite" });
@@ -45,18 +51,18 @@ export async function chooseSaveFolder(): Promise<ChooseFolderResult> {
       return {
         ok: false,
         reason: "permission-not-granted",
-        folderState: await getFolderState(),
+        folderState: await getFolderState(mediaType),
       };
     }
 
-    await saveDirectoryHandle(handle);
+    await saveDirectoryHandle(handle, mediaType);
 
     return {
       ok: true,
       folderState: { kind: "ready", name: handle.name },
     };
   } catch (error) {
-    const folderState = await getFolderState();
+    const folderState = await getFolderState(mediaType);
 
     if (error instanceof DOMException && error.name === "AbortError") {
       return { ok: false, reason: "cancelled", folderState };
@@ -66,8 +72,10 @@ export async function chooseSaveFolder(): Promise<ChooseFolderResult> {
   }
 }
 
-export async function clearSaveFolder(): Promise<FolderState> {
-  await clearDirectoryHandle();
+export async function clearSaveFolder(
+  mediaType: MediaType = DEFAULT_MEDIA_TYPE,
+): Promise<FolderState> {
+  await clearDirectoryHandle(mediaType);
   return { kind: "missing" };
 }
 
