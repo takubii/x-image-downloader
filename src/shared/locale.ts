@@ -10,13 +10,22 @@ export type UiMessages = {
   languageAuto: string;
   languageJapanese: string;
   languageEnglish: string;
-  saveFolderTitle: string;
+  saveFoldersTitle: string;
+  imageFolderTitle: string;
+  videoFolderTitle: string;
+  gifFolderTitle: string;
   folderNotSelectedTitle: string;
-  folderNotSelectedDescription: string;
   folderReadyTitle: string;
-  folderReadyDescription: string;
   folderPermissionTitle: string;
-  folderPermissionDescription: string;
+  imageFolderNotSelectedDescription: string;
+  videoFolderNotSelectedDescription: string;
+  gifFolderNotSelectedDescription: string;
+  imageFolderReadyDescription: string;
+  videoFolderReadyDescription: string;
+  gifFolderReadyDescription: string;
+  imageFolderPermissionDescription: string;
+  videoFolderPermissionDescription: string;
+  gifFolderPermissionDescription: string;
   chooseFolder: string;
   chooseAgain: string;
   clearFolder: string;
@@ -51,13 +60,22 @@ const messages: Record<ResolvedLocale, UiMessages> = {
     languageAuto: "Auto",
     languageJapanese: "Japanese",
     languageEnglish: "English",
-    saveFolderTitle: "Save Folder",
+    saveFoldersTitle: "Save Folders",
+    imageFolderTitle: "Images",
+    videoFolderTitle: "Videos",
+    gifFolderTitle: "GIFs",
     folderNotSelectedTitle: "No save folder selected",
-    folderNotSelectedDescription: "Choose a folder before saving images.",
     folderReadyTitle: "Ready to save",
-    folderReadyDescription: "Images will be saved to this folder.",
     folderPermissionTitle: "Permission required",
-    folderPermissionDescription: "Choose the folder again to continue saving images.",
+    imageFolderNotSelectedDescription: "Choose a folder before saving images.",
+    videoFolderNotSelectedDescription: "Choose a folder before saving videos.",
+    gifFolderNotSelectedDescription: "Choose a folder before saving GIFs.",
+    imageFolderReadyDescription: "Images will be saved to this folder.",
+    videoFolderReadyDescription: "Videos will be saved to this folder.",
+    gifFolderReadyDescription: "GIFs will be saved to this folder.",
+    imageFolderPermissionDescription: "Choose the folder again to continue saving images.",
+    videoFolderPermissionDescription: "Choose the folder again to continue saving videos.",
+    gifFolderPermissionDescription: "Choose the folder again to continue saving GIFs.",
     chooseFolder: "Choose Folder",
     chooseAgain: "Choose Again",
     clearFolder: "Clear Folder",
@@ -91,13 +109,24 @@ const messages: Record<ResolvedLocale, UiMessages> = {
     languageAuto: "自動",
     languageJapanese: "日本語",
     languageEnglish: "英語",
-    saveFolderTitle: "保存フォルダー",
+    saveFoldersTitle: "保存フォルダー",
+    imageFolderTitle: "画像",
+    videoFolderTitle: "動画",
+    gifFolderTitle: "GIF",
     folderNotSelectedTitle: "保存フォルダーが未設定です",
-    folderNotSelectedDescription: "画像を保存する前にフォルダーを選択してください。",
     folderReadyTitle: "保存できます",
-    folderReadyDescription: "画像はこのフォルダーに保存されます。",
     folderPermissionTitle: "権限が必要です",
-    folderPermissionDescription: "保存を続けるには、もう一度フォルダーを選択してください。",
+    imageFolderNotSelectedDescription: "画像を保存する前にフォルダーを選択してください。",
+    videoFolderNotSelectedDescription: "動画を保存する前にフォルダーを選択してください。",
+    gifFolderNotSelectedDescription: "GIFを保存する前にフォルダーを選択してください。",
+    imageFolderReadyDescription: "画像はこのフォルダーに保存されます。",
+    videoFolderReadyDescription: "動画はこのフォルダーに保存されます。",
+    gifFolderReadyDescription: "GIFはこのフォルダーに保存されます。",
+    imageFolderPermissionDescription:
+      "画像の保存を続けるには、もう一度フォルダーを選択してください。",
+    videoFolderPermissionDescription:
+      "動画の保存を続けるには、もう一度フォルダーを選択してください。",
+    gifFolderPermissionDescription: "GIFの保存を続けるには、もう一度フォルダーを選択してください。",
     chooseFolder: "フォルダーを選択",
     chooseAgain: "再選択",
     clearFolder: "クリア",

@@ -24,25 +24,73 @@
         </label>
       </header>
 
-      <section class="card folder-card" id="folderCard">
-        <div class="card-header">
-          <h2 data-i18n="saveFolderTitle"></h2>
+      <section class="folder-stack" aria-labelledby="saveFoldersTitle">
+        <div class="section-header">
+          <h2 id="saveFoldersTitle" data-i18n="saveFoldersTitle"></h2>
         </div>
-        <div class="folder-card__content">
-          <div class="folder-card__status"></div>
-          <div class="folder-card__body">
-            <h3 id="folderTitle"></h3>
-            <p id="folderDescription"></p>
-            <p class="folder-name">
-              <span class="folder-name__icon" aria-hidden="true">📁</span
-              ><span id="folderName"></span>
-            </p>
+
+        <section class="card folder-card" data-folder-card="image">
+          <div class="card-header">
+            <h3 data-i18n="imageFolderTitle"></h3>
           </div>
-          <div class="folder-card__actions">
-            <button id="chooseFolder" type="button"></button>
-            <button id="clearFolder" type="button" class="danger"></button>
+          <div class="folder-card__content">
+            <div class="folder-card__status"></div>
+            <div class="folder-card__body">
+              <h4 data-folder-role="title"></h4>
+              <p data-folder-role="description"></p>
+              <p class="folder-name">
+                <span class="folder-name__icon" aria-hidden="true">📁</span
+                ><span class="folder-name__text" data-folder-role="name"></span>
+              </p>
+            </div>
+            <div class="folder-card__actions">
+              <button data-folder-role="choose" type="button"></button>
+              <button data-folder-role="clear" type="button" class="danger"></button>
+            </div>
           </div>
-        </div>
+        </section>
+
+        <section class="card folder-card" data-folder-card="video">
+          <div class="card-header">
+            <h3 data-i18n="videoFolderTitle"></h3>
+          </div>
+          <div class="folder-card__content">
+            <div class="folder-card__status"></div>
+            <div class="folder-card__body">
+              <h4 data-folder-role="title"></h4>
+              <p data-folder-role="description"></p>
+              <p class="folder-name">
+                <span class="folder-name__icon" aria-hidden="true">📁</span
+                ><span class="folder-name__text" data-folder-role="name"></span>
+              </p>
+            </div>
+            <div class="folder-card__actions">
+              <button data-folder-role="choose" type="button"></button>
+              <button data-folder-role="clear" type="button" class="danger"></button>
+            </div>
+          </div>
+        </section>
+
+        <section class="card folder-card" data-folder-card="gif">
+          <div class="card-header">
+            <h3 data-i18n="gifFolderTitle"></h3>
+          </div>
+          <div class="folder-card__content">
+            <div class="folder-card__status"></div>
+            <div class="folder-card__body">
+              <h4 data-folder-role="title"></h4>
+              <p data-folder-role="description"></p>
+              <p class="folder-name">
+                <span class="folder-name__icon" aria-hidden="true">📁</span
+                ><span class="folder-name__text" data-folder-role="name"></span>
+              </p>
+            </div>
+            <div class="folder-card__actions">
+              <button data-folder-role="choose" type="button"></button>
+              <button data-folder-role="clear" type="button" class="danger"></button>
+            </div>
+          </div>
+        </section>
       </section>
 
       <section class="card settings-panel">

@@ -10,34 +10,28 @@ import {
   applyTranslations,
   chooseSaveFolder,
   clearSaveFolder,
-  getFolderState,
-  renderFolderCard,
+  createInitialFolderStateMap,
+  FOLDER_MEDIA_TYPES,
+  getFolderCardElementMap,
+  getFolderStateMap,
+  renderFolderCards,
 } from "../shared/settings-view";
-import type { FolderState } from "../shared/settings-view";
+import type { FolderStateMap } from "../shared/settings-view";
 
 const language = getElement<HTMLSelectElement>("language");
 const filenameTemplate = getElement<HTMLInputElement>("filenameTemplate");
 const duplicateBehavior = getElement<HTMLSelectElement>("duplicateBehavior");
 const preferOriginalImage = getElement<HTMLInputElement>("preferOriginalImage");
-const chooseFolder = getElement<HTMLButtonElement>("chooseFolder");
-const clearFolder = getElement<HTMLButtonElement>("clearFolder");
 const saveStatus = getElement<HTMLParagraphElement>("saveStatus");
 const developerDiagnostics = getElement<HTMLDetailsElement>("developerDiagnostics");
 const refreshLogs = getElement<HTMLButtonElement>("refreshLogs");
 const clearLogs = getElement<HTMLButtonElement>("clearLogs");
 const debugLogs = getElement<HTMLPreElement>("debugLogs");
 
-const folderElements = {
-  card: getElement<HTMLElement>("folderCard"),
-  title: getElement<HTMLElement>("folderTitle"),
-  description: getElement<HTMLElement>("folderDescription"),
-  name: getElement<HTMLElement>("folderName"),
-  action: chooseFolder,
-  clear: clearFolder,
-};
+const folderElementMap = getFolderCardElementMap(document);
 
 let settings: Settings = normalizeSettings({});
-let folderState: FolderState = { kind: "missing" };
+let folderStates: FolderStateMap = createInitialFolderStateMap();
 let messages: UiMessages = getUiMessages("en");
 
 void init();
@@ -48,43 +42,45 @@ language.addEventListener("change", () => {
   });
 });
 
-chooseFolder.addEventListener("click", async () => {
-  void logOptions("info", "Choosing save folder.");
-  const result = await chooseSaveFolder();
-  folderState = result.folderState;
-  render();
+for (const mediaType of FOLDER_MEDIA_TYPES) {
+  folderElementMap[mediaType].action.addEventListener("click", async () => {
+    void logOptions("info", "Choosing save folder.", { mediaType });
+    const result = await chooseSaveFolder(mediaType);
+    folderStates = { ...folderStates, [mediaType]: result.folderState };
+    render();
 
-  if (result.ok) {
-    void logOptions("info", "Save folder selected.");
-    setSaveStatus(messages.folderSaved);
-    return;
-  }
+    if (result.ok) {
+      void logOptions("info", "Save folder selected.", { mediaType });
+      setSaveStatus(messages.folderSaved);
+      return;
+    }
 
-  if (result.reason === "cancelled") {
-    void logOptions("info", "Folder selection cancelled.");
-    setSaveStatus(messages.folderSelectionCancelled);
-    return;
-  }
+    if (result.reason === "cancelled") {
+      void logOptions("info", "Folder selection cancelled.", { mediaType });
+      setSaveStatus(messages.folderSelectionCancelled);
+      return;
+    }
 
-  if (result.reason === "permission-not-granted") {
-    void logOptions("warn", "Save folder permission was not granted.");
-    setSaveStatus(messages.folderPermissionNotGranted);
-    return;
-  }
+    if (result.reason === "permission-not-granted") {
+      void logOptions("warn", "Save folder permission was not granted.", { mediaType });
+      setSaveStatus(messages.folderPermissionNotGranted);
+      return;
+    }
 
-  if (result.reason === "failed") {
-    void logOptions("error", "Folder selection failed.", result.error);
-    setSaveStatus(getErrorMessage(result.error));
-  }
-});
+    if (result.reason === "failed") {
+      void logOptions("error", "Folder selection failed.", { mediaType, error: result.error });
+      setSaveStatus(getErrorMessage(result.error));
+    }
+  });
 
-clearFolder.addEventListener("click", async () => {
-  await clearSaveFolder();
-  folderState = { kind: "missing" };
-  render();
-  void logOptions("info", "Save folder cleared.");
-  setSaveStatus(messages.folderCleared);
-});
+  folderElementMap[mediaType].clear.addEventListener("click", async () => {
+    const nextFolderState = await clearSaveFolder(mediaType);
+    folderStates = { ...folderStates, [mediaType]: nextFolderState };
+    render();
+    void logOptions("info", "Save folder cleared.", { mediaType });
+    setSaveStatus(messages.folderCleared);
+  });
+}
 
 filenameTemplate.addEventListener("input", () => {
   void updateSettings({
@@ -121,7 +117,7 @@ if (isLocalBuild) {
 }
 
 async function init(): Promise<void> {
-  [settings, folderState] = await Promise.all([getSettings(), getFolderState()]);
+  [settings, folderStates] = await Promise.all([getSettings(), getFolderStateMap()]);
   syncControls();
   render();
   if (isLocalBuild) {
@@ -152,7 +148,7 @@ function render(): void {
   messages = getUiMessages(locale);
   document.documentElement.lang = locale;
   applyTranslations(document, messages);
-  renderFolderCard(folderElements, folderState, messages);
+  renderFolderCards(folderElementMap, folderStates, messages);
 }
 
 async function renderDebugLogs(): Promise<void> {

@@ -8,31 +8,25 @@ import {
   applyTranslations,
   chooseSaveFolder,
   clearSaveFolder,
-  getFolderState,
-  renderFolderCard,
+  createInitialFolderStateMap,
+  FOLDER_MEDIA_TYPES,
+  getFolderCardElementMap,
+  getFolderStateMap,
+  renderFolderCards,
 } from "../shared/settings-view";
-import type { FolderState } from "../shared/settings-view";
+import type { FolderStateMap } from "../shared/settings-view";
 
 const language = getElement<HTMLSelectElement>("language");
 const filenameTemplate = getElement<HTMLInputElement>("filenameTemplate");
 const duplicateBehavior = getElement<HTMLSelectElement>("duplicateBehavior");
 const preferOriginalImage = getElement<HTMLInputElement>("preferOriginalImage");
-const chooseFolder = getElement<HTMLButtonElement>("chooseFolder");
-const clearFolder = getElement<HTMLButtonElement>("clearFolder");
 const openFullSettings = getElement<HTMLButtonElement>("openFullSettings");
 const saveStatus = getElement<HTMLParagraphElement>("saveStatus");
 
-const folderElements = {
-  card: getElement<HTMLElement>("folderCard"),
-  title: getElement<HTMLElement>("folderTitle"),
-  description: getElement<HTMLElement>("folderDescription"),
-  name: getElement<HTMLElement>("folderName"),
-  action: chooseFolder,
-  clear: clearFolder,
-};
+const folderElementMap = getFolderCardElementMap(document);
 
 let settings: Settings = normalizeSettings({});
-let folderState: FolderState = { kind: "missing" };
+let folderStates: FolderStateMap = createInitialFolderStateMap();
 let messages: UiMessages = getUiMessages("en");
 
 void init();
@@ -61,37 +55,39 @@ preferOriginalImage.addEventListener("change", () => {
   });
 });
 
-chooseFolder.addEventListener("click", async () => {
-  const result = await chooseSaveFolder();
-  folderState = result.folderState;
-  render();
+for (const mediaType of FOLDER_MEDIA_TYPES) {
+  folderElementMap[mediaType].action.addEventListener("click", async () => {
+    const result = await chooseSaveFolder(mediaType);
+    folderStates = { ...folderStates, [mediaType]: result.folderState };
+    render();
 
-  if (result.ok) {
-    setStatus(messages.folderSaved);
-    return;
-  }
+    if (result.ok) {
+      setStatus(messages.folderSaved);
+      return;
+    }
 
-  if (result.reason === "cancelled") {
-    setStatus(messages.folderSelectionCancelled);
-    return;
-  }
+    if (result.reason === "cancelled") {
+      setStatus(messages.folderSelectionCancelled);
+      return;
+    }
 
-  if (result.reason === "permission-not-granted") {
-    setStatus(messages.folderPermissionNotGranted);
-    return;
-  }
+    if (result.reason === "permission-not-granted") {
+      setStatus(messages.folderPermissionNotGranted);
+      return;
+    }
 
-  if (result.reason === "failed") {
-    setStatus(getErrorMessage(result.error));
-  }
-});
+    if (result.reason === "failed") {
+      setStatus(getErrorMessage(result.error));
+    }
+  });
 
-clearFolder.addEventListener("click", async () => {
-  await clearSaveFolder();
-  folderState = { kind: "missing" };
-  render();
-  setStatus(messages.folderCleared);
-});
+  folderElementMap[mediaType].clear.addEventListener("click", async () => {
+    const nextFolderState = await clearSaveFolder(mediaType);
+    folderStates = { ...folderStates, [mediaType]: nextFolderState };
+    render();
+    setStatus(messages.folderCleared);
+  });
+}
 
 openFullSettings.addEventListener("click", () => {
   void chrome.runtime.openOptionsPage();
@@ -99,7 +95,7 @@ openFullSettings.addEventListener("click", () => {
 });
 
 async function init(): Promise<void> {
-  [settings, folderState] = await Promise.all([getSettings(), getFolderState()]);
+  [settings, folderStates] = await Promise.all([getSettings(), getFolderStateMap()]);
   syncControls();
   render();
 }
@@ -124,7 +120,7 @@ function render(): void {
   messages = getUiMessages(locale);
   document.documentElement.lang = locale;
   applyTranslations(document, messages);
-  renderFolderCard(folderElements, folderState, messages);
+  renderFolderCards(folderElementMap, folderStates, messages);
 }
 
 function setStatus(message: string): void {

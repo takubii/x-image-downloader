@@ -125,7 +125,7 @@ body {
     height: 8px;
     min-height: 8px;
   }
-  #folderName {
+  .folder-name__text {
     font-size: 28px;
   }
 }
