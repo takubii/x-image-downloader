@@ -46,8 +46,40 @@ export function createSaveButton(): SaveButton {
         font: 700 18px/1 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
       }
 
+      button[data-state="saving"] {
+        background: rgba(37, 99, 235, 0.94);
+      }
+
+      button[data-state="saved"] {
+        background: rgba(22, 163, 74, 0.94);
+      }
+
+      button[data-state="skipped"] {
+        background: rgba(100, 116, 139, 0.94);
+      }
+
+      button[data-state="failed"] {
+        background: rgba(220, 38, 38, 0.94);
+      }
+
       button:hover {
         background: rgba(2, 6, 23, 0.96);
+      }
+
+      button[data-state="saving"]:hover {
+        background: rgba(29, 78, 216, 0.96);
+      }
+
+      button[data-state="saved"]:hover {
+        background: rgba(21, 128, 61, 0.96);
+      }
+
+      button[data-state="skipped"]:hover {
+        background: rgba(71, 85, 105, 0.96);
+      }
+
+      button[data-state="failed"]:hover {
+        background: rgba(185, 28, 28, 0.96);
       }
 
       button:disabled {
@@ -55,7 +87,7 @@ export function createSaveButton(): SaveButton {
         opacity: 0.86;
       }
     </style>
-    <button type="button" title="Save image" aria-label="Save image">↓</button>
+    <button type="button" title="Save media" aria-label="Save media">↓</button>
   `;
 
   const button = shadow.querySelector("button");
@@ -88,6 +120,7 @@ export function createSaveButton(): SaveButton {
 
 function setButtonState(button: HTMLButtonElement, state: SaveButtonState): void {
   button.disabled = state === "saving";
+  button.dataset.state = state;
 
   if (state === "idle") {
     button.textContent = "↓";
