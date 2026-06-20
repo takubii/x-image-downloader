@@ -9,6 +9,16 @@ export type SaveImagePayload = {
   tweetId?: string;
 };
 
+export type SaveVideoPayload = {
+  videoUrl: string;
+  pageUrl: string;
+  mediaType: "video" | "gif";
+  posterUrl?: string;
+  bitrate?: number;
+  author?: string;
+  tweetId?: string;
+};
+
 type SaveFailureReason = "folder-not-selected" | "permission-denied" | "download-failed";
 
 export type SaveImageResponse =
