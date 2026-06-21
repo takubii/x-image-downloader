@@ -50,7 +50,7 @@ export function getVisibleImageRect(image: HTMLImageElement): DOMRect | null {
     return null;
   }
 
-  if (!isImageUncovered(image, rect)) {
+  if (!isElementUncovered(image, rect)) {
     return null;
   }
 
@@ -61,7 +61,7 @@ export function isPointInsideRect(x: number, y: number, rect: DOMRect): boolean 
   return x >= rect.left && x <= rect.right && y >= rect.top && y <= rect.bottom;
 }
 
-function isImageUncovered(image: HTMLImageElement, rect: DOMRect): boolean {
+export function isElementUncovered(element: Element, rect: DOMRect): boolean {
   const inset = Math.min(IMAGE_VISIBILITY_INSET, rect.width / 2, rect.height / 2);
   const horizontalCenter = rect.left + rect.width / 2;
   const verticalCenter = rect.top + rect.height / 2;
@@ -74,25 +74,25 @@ function isImageUncovered(image: HTMLImageElement, rect: DOMRect): boolean {
     { x: horizontalCenter, y: verticalCenter },
   ];
 
-  return points.every((point) => isImagePointVisible(image, point.x, point.y));
+  return points.every((point) => isElementPointVisible(element, point.x, point.y));
 }
 
-function isImagePointVisible(image: HTMLImageElement, x: number, y: number): boolean {
-  const element = document.elementFromPoint(x, y);
+function isElementPointVisible(target: Element, x: number, y: number): boolean {
+  const elementAtPoint = document.elementFromPoint(x, y);
 
-  if (!element) {
+  if (!elementAtPoint) {
     return false;
   }
 
-  if (element === image || image.contains(element)) {
+  if (elementAtPoint === target || target.contains(elementAtPoint)) {
     return true;
   }
 
-  return isCloseImageAncestor(element, image);
+  return isCloseAncestor(elementAtPoint, target);
 }
 
-function isCloseImageAncestor(element: Element, image: HTMLImageElement): boolean {
-  let parent = image.parentElement;
+function isCloseAncestor(element: Element, target: Element): boolean {
+  let parent = target.parentElement;
   let depth = 0;
 
   while (parent && depth < MAX_VISIBLE_ANCESTOR_DEPTH) {

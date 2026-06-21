@@ -1,5 +1,10 @@
 import { getContentImageKey } from "./image-key";
-import { getEligibleImage, getVisibleImageRect, isPointInsideRect } from "./image-visibility";
+import {
+  getEligibleImage,
+  getVisibleImageRect,
+  isElementUncovered,
+  isPointInsideRect,
+} from "./image-visibility";
 import { createImageSaveStateStore } from "./save-state";
 import { createSaveButton } from "./save-button";
 import { getXVideoKey, resolveXVideoCandidate } from "./video-target";
@@ -338,6 +343,10 @@ function getVisibleVideoRect(video: HTMLVideoElement): DOMRect | null {
     rect.bottom > window.innerHeight ||
     rect.right > window.innerWidth
   ) {
+    return null;
+  }
+
+  if (!isElementUncovered(video, rect)) {
     return null;
   }
 
