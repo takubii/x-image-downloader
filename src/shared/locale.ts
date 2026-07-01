@@ -41,6 +41,9 @@ export type UiMessages = {
   developerDiagnostics: string;
   developerDiagnosticsHint: string;
   refreshLogs: string;
+  copyLogs: string;
+  logsCopied: string;
+  logsCopyFailed: string;
   clearLogs: string;
   noLogs: string;
   folderSaved: string;
@@ -92,6 +95,9 @@ const messages: Record<ResolvedLocale, UiMessages> = {
     developerDiagnostics: "Developer diagnostics",
     developerDiagnosticsHint: "Debug logs are kept here while the extension is in development.",
     refreshLogs: "Refresh Logs",
+    copyLogs: "Copy Logs",
+    logsCopied: "Logs copied.",
+    logsCopyFailed: "Could not copy logs.",
     clearLogs: "Clear Logs",
     noLogs: "No logs.",
     folderSaved: "Folder saved.",
@@ -142,6 +148,9 @@ const messages: Record<ResolvedLocale, UiMessages> = {
     developerDiagnostics: "開発者向け診断",
     developerDiagnosticsHint: "開発中の確認用にデバッグログを残しています。",
     refreshLogs: "ログを更新",
+    copyLogs: "ログをコピー",
+    logsCopied: "ログをコピーしました。",
+    logsCopyFailed: "ログをコピーできませんでした。",
     clearLogs: "ログを消去",
     noLogs: "ログはありません。",
     folderSaved: "フォルダーを保存しました。",

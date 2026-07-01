@@ -25,6 +25,7 @@ const preferOriginalImage = getElement<HTMLInputElement>("preferOriginalImage");
 const saveStatus = getElement<HTMLParagraphElement>("saveStatus");
 const developerDiagnostics = getElement<HTMLDetailsElement>("developerDiagnostics");
 const refreshLogs = getElement<HTMLButtonElement>("refreshLogs");
+const copyLogs = getElement<HTMLButtonElement>("copyLogs");
 const clearLogs = getElement<HTMLButtonElement>("clearLogs");
 const debugLogs = getElement<HTMLPreElement>("debugLogs");
 
@@ -107,6 +108,10 @@ if (isLocalBuild) {
     void renderDebugLogs();
   });
 
+  copyLogs.addEventListener("click", async () => {
+    await copyDebugLogs();
+  });
+
   clearLogs.addEventListener("click", async () => {
     await clearDebugLogs();
     await logOptions("info", "Debug logs cleared.");
@@ -166,6 +171,18 @@ async function renderDebugLogs(): Promise<void> {
     })
     .join("\n");
   debugLogs.scrollTop = debugLogs.scrollHeight;
+}
+
+async function copyDebugLogs(): Promise<void> {
+  const text = debugLogs.textContent || "";
+
+  try {
+    await navigator.clipboard.writeText(text);
+    setSaveStatus(messages.logsCopied);
+  } catch (error) {
+    void logOptions("warn", "Debug logs copy failed.", error);
+    setSaveStatus(messages.logsCopyFailed);
+  }
 }
 
 function setSaveStatus(message: string): void {
