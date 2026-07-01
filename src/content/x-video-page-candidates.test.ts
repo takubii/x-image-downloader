@@ -83,6 +83,161 @@ describe("createXVideoPageCandidateStore", () => {
     });
   });
 
+  test("resolves a single tweet candidate when the hovered video poster has no media id", () => {
+    const store = createXVideoPageCandidateStore();
+    const video = {
+      currentSrc: "blob:https://x.com/video",
+      poster: "https://pbs.twimg.com/media/HMKoSbnXEAERYLR.jpg",
+    } as HTMLVideoElement;
+
+    store.cache([
+      {
+        tweetId: "2072402636813607381",
+        mediaId: "2072401478288101376",
+        videoUrl,
+        mediaType: "video",
+      },
+    ]);
+
+    expect(store.find(video, { tweetId: "2072402636813607381" })).toEqual({
+      tweetId: "2072402636813607381",
+      mediaId: "2072401478288101376",
+      videoUrl,
+      mediaType: "video",
+    });
+  });
+
+  test("does not resolve by tweet when multiple candidates could match", () => {
+    const store = createXVideoPageCandidateStore({
+      getPageUrl: () => "https://x.com/claudeai/status/2072402636813607381",
+    });
+    const video = {
+      currentSrc: "blob:https://x.com/video",
+      poster: "https://pbs.twimg.com/media/HMKoSbnXEAERYLR.jpg",
+    } as HTMLVideoElement;
+
+    store.cache([
+      {
+        tweetId: "2072402636813607381",
+        mediaId: "2072401478288101376",
+        videoUrl,
+        mediaType: "video",
+      },
+      {
+        tweetId: "2072402636813607381",
+        mediaId: "2072401478288101377",
+        videoUrl:
+          "https://video.twimg.com/amplify_video/2072401478288101377/vid/avc1/1022x566/high.mp4",
+        mediaType: "video",
+      },
+    ]);
+
+    expect(store.find(video, { tweetId: "2072402636813607381" })).toBeNull();
+    expect(store.markMissing(video, { tweetId: "2072402636813607381" })).toMatchObject({
+      reason: "ambiguous-tweet-candidates",
+      tweetId: "2072402636813607381",
+      mediaId: null,
+    });
+  });
+
+  test("does not resolve media tab previews by tweet alone", () => {
+    const store = createXVideoPageCandidateStore();
+
+    store.cache([
+      {
+        tweetId: "2072402636813607381",
+        mediaId: "2072401478288101376",
+        videoUrl,
+        mediaType: "video",
+      },
+    ]);
+
+    expect(store.findByTweetAndPoster({ tweetId: "2072402636813607381" })).toBeNull();
+  });
+
+  test("does not resolve by tweet when a media tab preview has multiple candidates", () => {
+    const store = createXVideoPageCandidateStore();
+
+    store.cache([
+      {
+        tweetId: "2072402636813607381",
+        mediaId: "2072401478288101376",
+        videoUrl,
+        mediaType: "video",
+      },
+      {
+        tweetId: "2072402636813607381",
+        mediaId: "2072401478288101377",
+        videoUrl:
+          "https://video.twimg.com/amplify_video/2072401478288101377/vid/avc1/1022x566/high.mp4",
+        mediaType: "video",
+      },
+    ]);
+
+    expect(store.findByTweetAndPoster({ tweetId: "2072402636813607381" })).toBeNull();
+  });
+
+  test("resolves a media tab preview by matching its poster URL", () => {
+    const store = createXVideoPageCandidateStore();
+
+    store.cache([
+      {
+        tweetId: "2072402636813607381",
+        mediaId: "2072401478288101376",
+        videoUrl,
+        mediaType: "video",
+        posterUrl: "https://pbs.twimg.com/media/HMKoSbnXEAERYLR.jpg",
+      },
+      {
+        tweetId: "2072402636813607381",
+        mediaId: "2072401478288101377",
+        videoUrl:
+          "https://video.twimg.com/amplify_video/2072401478288101377/vid/avc1/1022x566/high.mp4",
+        mediaType: "video",
+        posterUrl: "https://pbs.twimg.com/media/HMKoSbnXEAERYLS.jpg",
+      },
+    ]);
+
+    expect(
+      store.findByTweetAndPoster(
+        { tweetId: "2072402636813607381" },
+        "https://pbs.twimg.com/media/HMKoSbnXEAERYLR.jpg?format=jpg&name=small",
+      ),
+    ).toEqual({
+      tweetId: "2072402636813607381",
+      mediaId: "2072401478288101376",
+      videoUrl,
+      mediaType: "video",
+      posterUrl: "https://pbs.twimg.com/media/HMKoSbnXEAERYLR.jpg",
+    });
+  });
+
+  test("matches media tab poster URLs across X image URL extension variants", () => {
+    const store = createXVideoPageCandidateStore();
+
+    store.cache([
+      {
+        tweetId: "2072416723425513697",
+        mediaId: "2072416673358118912",
+        videoUrl:
+          "https://video.twimg.com/amplify_video/2072416673358118912/vid/avc1/1280x720/gSbmzuNlkLpcVc1q.mp4?tag=14",
+        mediaType: "video",
+        posterUrl:
+          "https://pbs.twimg.com/amplify_video_thumb/2072416673358118912/img/3P4FxqLn6YOjDOAJ.jpg",
+      },
+    ]);
+
+    expect(
+      store.findByTweetAndPoster(
+        { tweetId: "2072416723425513697" },
+        "https://pbs.twimg.com/amplify_video_thumb/2072416673358118912/img/3P4FxqLn6YOjDOAJ?format=jpg&name=360x360",
+      ),
+    ).toMatchObject({
+      tweetId: "2072416723425513697",
+      mediaId: "2072416673358118912",
+    });
+  });
+
   test("emits a missing-candidate log once per media key", () => {
     const store = createXVideoPageCandidateStore({
       getPageUrl: () => "https://x.com/home",

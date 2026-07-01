@@ -13,6 +13,7 @@ describe("normalizeXVideoPageCandidate", () => {
         mediaId: "2072046031202562048",
         videoUrl: highBitrateUrl,
         mediaType: "video",
+        posterUrl: "https://pbs.twimg.com/media/HMKoSbnXEAERYLR.jpg?format=jpg&name=small",
         bitrate: 2176000,
       }),
     ).toEqual({
@@ -20,6 +21,7 @@ describe("normalizeXVideoPageCandidate", () => {
       mediaId: "2072046031202562048",
       videoUrl: highBitrateUrl,
       mediaType: "video",
+      posterUrl: "https://pbs.twimg.com/media/HMKoSbnXEAERYLR.jpg?format=jpg&name=small",
       bitrate: 2176000,
     });
   });

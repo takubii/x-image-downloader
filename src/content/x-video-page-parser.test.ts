@@ -54,6 +54,7 @@ describe("extractXVideoCandidatesFromApiJson", () => {
         mediaId: "2072046031202562048",
         videoUrl: highBitrateUrl,
         mediaType: "video",
+        posterUrl: "https://pbs.twimg.com/amplify_video_thumb/2072046031202562048/img/thumb.jpg",
         bitrate: 2176000,
       },
       {
@@ -61,6 +62,7 @@ describe("extractXVideoCandidatesFromApiJson", () => {
         mediaId: "9999999999999999999",
         videoUrl: otherMediaUrl,
         mediaType: "video",
+        posterUrl: "https://pbs.twimg.com/amplify_video_thumb/9999999999999999999/img/thumb.jpg",
         bitrate: 832000,
       },
     ]);
@@ -93,6 +95,7 @@ describe("extractXVideoCandidatesFromApiJson", () => {
         mediaId: "gif_id",
         videoUrl: "https://video.twimg.com/tweet_video/gif_id.mp4",
         mediaType: "gif",
+        posterUrl: "https://pbs.twimg.com/amplify_video_thumb/gif_id/img/thumb.jpg",
       },
     ]);
   });
