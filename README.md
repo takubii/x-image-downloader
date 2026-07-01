@@ -1,12 +1,14 @@
-# x-image-downloader
+# X Media Downloader
 
-Chrome/Edge extension for saving X/Twitter post images to a local folder.
+Chrome extension for saving X/Twitter post media to local folders.
 
 ## What It Does
 
-- Adds a save button to supported X/Twitter post images.
-- Saves images to a folder you choose on your device.
-- Tracks save status per image, so each image shows its own loading and result state.
+- Adds a save button to supported X/Twitter post images, videos, and GIF-style media.
+- Saves media to folders you choose on your device.
+- Keeps separate save-folder settings for images, videos, and GIF-style media.
+- Saves GIF-style X/Twitter media as MP4 because X serves it as MP4-backed video.
+- Tracks save status per media item, so each item shows its own loading and result state.
 - Can prefer original image quality when X/Twitter provides it.
 - Lets you customize filename templates and duplicate-file behavior.
 - Supports Japanese and English UI text.
@@ -16,26 +18,13 @@ Chrome/Edge extension for saving X/Twitter post images to a local folder.
 - `x.com`
 - `twitter.com`
 
-## How To Use
-
-1. Build the extension for local testing, or obtain a packaged copy.
-   ```powershell
-   pnpm install
-   pnpm build
-   ```
-2. Load the extension from `dist/` in Chrome or Edge with Developer mode enabled.
-3. Click the extension icon in the toolbar.
-4. Choose a save folder.
-5. Open an image post on X/Twitter.
-6. Hover an image and click the save button.
-
 ## Settings
 
-Open the extension popup from the toolbar icon.
+Open the extension popup from the Chrome toolbar icon.
 
-- **Save folder**: choose, reselect, or clear the destination folder.
+- **Save folders**: choose, reselect, or clear separate destination folders for images, videos, and GIF-style media.
 - **Language**: use automatic detection, Japanese, or English.
-- **Filename template**: customize saved filenames with variables such as `{author}` and `{tweetId}`.
+- **Filename template**: customize saved filenames with variables such as `{author}`, `{tweetId}`, `{date}`, `{time}`, and `{originalName}`.
 - **Duplicate behavior**: overwrite, skip, or rename when a filename already exists.
 - **Prefer original image quality**: save the original image variant when available.
 
@@ -46,8 +35,14 @@ Release packages created with `pnpm package` hide diagnostics.
 
 ## Current Scope
 
-- Image posts are supported.
-- Videos, GIFs, and bulk save UI are not supported yet.
+- X/Twitter image posts are supported.
+- X/Twitter video posts are supported when the page API response exposes direct MP4 variants.
+- X/Twitter GIF-style media is supported as MP4-backed media and saved with a `.mp4` filename.
+- Bulk save UI is not supported yet.
+
+## Privacy
+
+See [docs/privacy-policy.md](docs/privacy-policy.md).
 
 ## License
 

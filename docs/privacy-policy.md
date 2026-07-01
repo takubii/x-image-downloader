@@ -1,28 +1,29 @@
 # Privacy Policy Draft
 
-x-image-downloader saves X/Twitter post images to a local folder selected by the user.
+X Media Downloader saves X/Twitter post media to local folders selected by the user.
 
 ## Data Stored By The Extension
 
-- Save folder handle: stored locally so images can be saved to the selected folder.
+- Save folder handles: stored locally so images, videos, and GIF-style media can be saved to the selected folders.
 - Extension settings: stored with Chrome extension storage.
 - Saved filename records: stored locally to support duplicate-file behavior.
+- Debug logs: stored locally in development builds only.
 
 ## Data Collection And Sharing
 
-x-image-downloader does not collect, sell, or share user data.
+X Media Downloader does not collect, sell, or share user data.
 
-The extension does not send saved images, image URLs, page URLs, settings, or folder information to the developer or to third-party services.
+The extension does not send saved media, media URLs, page URLs, settings, folder information, or debug logs to the developer or to third-party services.
 
 ## Network Access
 
-The extension accesses X/Twitter pages and X/Twitter image URLs only to detect image posts and save the selected image.
+The extension accesses X/Twitter pages, X/Twitter image URLs, and X/Twitter video URLs only to detect supported media and save the selected file.
 
 ## User Control
 
-Users can change or clear the save folder from the extension popup.
+Users can change or clear save folders from the extension popup or options page.
 
 ## Contact
 
 For questions about this extension or privacy policy, open an issue at:
-https://github.com/takubii/x-image-downloader/issues
+https://github.com/takubii/x-media-downloader/issues

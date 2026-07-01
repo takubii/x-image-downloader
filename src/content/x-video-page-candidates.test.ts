@@ -13,7 +13,7 @@ describe("parseXVideoPageCandidateMessage", () => {
   test("normalizes valid page messages", () => {
     expect(
       parseXVideoPageCandidateMessage({
-        source: "x-image-downloader-page",
+        source: "x-media-downloader-page",
         type: "X_VIDEO_API_CANDIDATES",
         delivery: "live",
         requestPath: "x.com/i/api/graphql/HomeTimeline",
@@ -46,7 +46,7 @@ describe("parseXVideoPageCandidateMessage", () => {
     expect(parseXVideoPageCandidateMessage({})).toBeNull();
     expect(
       parseXVideoPageCandidateMessage({
-        source: "x-image-downloader-page",
+        source: "x-media-downloader-page",
         type: "X_VIDEO_API_CANDIDATES",
         delivery: "live",
         candidates: [

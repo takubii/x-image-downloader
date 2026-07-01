@@ -24,7 +24,7 @@ export function writeDebugConsole(entry: DebugLogEntry): void {
     return;
   }
 
-  const text = `[x-image-downloader] [${entry.source}] ${entry.message}`;
+  const text = `[x-media-downloader] [${entry.source}] ${entry.message}`;
   const details = entry.details ? JSON.parse(entry.details) : undefined;
 
   if (entry.level === "error") {

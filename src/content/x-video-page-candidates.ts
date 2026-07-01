@@ -32,9 +32,9 @@ type XVideoPageCandidateStoreOptions = {
   getPageUrl?: () => string;
 };
 
-const PAGE_MESSAGE_SOURCE = "x-image-downloader-page";
+const PAGE_MESSAGE_SOURCE = "x-media-downloader-page";
 const PAGE_MESSAGE_TYPE = "X_VIDEO_API_CANDIDATES";
-const CONTENT_MESSAGE_SOURCE = "x-image-downloader-content";
+const CONTENT_MESSAGE_SOURCE = "x-media-downloader-content";
 const SNAPSHOT_REQUEST_TYPE = "REQUEST_X_VIDEO_API_CANDIDATES";
 const MAX_PAGE_VIDEO_CANDIDATE_CACHE_ENTRIES = 500;
 const MAX_MISSING_VIDEO_LOG_ENTRIES = 500;

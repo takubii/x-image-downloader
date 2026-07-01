@@ -2,7 +2,7 @@ import { extractXVideoCandidatesFromApiJson } from "./x-video-page-parser";
 import type { XVideoPageCandidate } from "./x-video-page-parser";
 
 type XVideoCandidatesMessage = {
-  source: "x-image-downloader-page";
+  source: "x-media-downloader-page";
   type: "X_VIDEO_API_CANDIDATES";
   delivery: "live" | "snapshot";
   requestPath?: string;
@@ -10,14 +10,14 @@ type XVideoCandidatesMessage = {
 };
 
 type XVideoCandidatesRequestMessage = {
-  source: "x-image-downloader-content";
+  source: "x-media-downloader-content";
   type: "REQUEST_X_VIDEO_API_CANDIDATES";
 };
 
-const PAGE_MESSAGE_SOURCE = "x-image-downloader-page";
-const CONTENT_MESSAGE_SOURCE = "x-image-downloader-content";
+const PAGE_MESSAGE_SOURCE = "x-media-downloader-page";
+const CONTENT_MESSAGE_SOURCE = "x-media-downloader-content";
 const MAX_CACHED_CANDIDATES = 500;
-const OBSERVER_INSTALLED_KEY = Symbol.for("x-image-downloader.videoObserverInstalled");
+const OBSERVER_INSTALLED_KEY = Symbol.for("x-media-downloader.videoObserverInstalled");
 
 const candidateCache = new Map<string, XVideoPageCandidate>();
 const observerWindow = window as unknown as Window & { [key: symbol]: boolean | undefined };

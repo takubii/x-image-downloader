@@ -12,7 +12,7 @@ export type SaveButton = {
 
 export function createSaveButton(): SaveButton {
   const host = document.createElement("div");
-  host.id = "x-image-downloader-root";
+  host.id = "x-media-downloader-root";
   document.documentElement.appendChild(host);
 
   const shadow = host.attachShadow({ mode: "open" });

@@ -52,10 +52,10 @@ export type UiMessages = {
 
 const messages: Record<ResolvedLocale, UiMessages> = {
   en: {
-    optionsPageTitle: "X Image Downloader Options",
-    popupPageTitle: "X Image Downloader",
+    optionsPageTitle: "X Media Downloader Options",
+    popupPageTitle: "X Media Downloader",
     settingsTitle: "Settings",
-    appSubtitle: "Save X/Twitter images to a local folder.",
+    appSubtitle: "Save X/Twitter images, videos, and GIF-style media to local folders.",
     languageLabel: "Language",
     languageAuto: "Auto",
     languageJapanese: "Japanese",
@@ -101,10 +101,10 @@ const messages: Record<ResolvedLocale, UiMessages> = {
     settingsSaved: "Settings saved.",
   },
   ja: {
-    optionsPageTitle: "X Image Downloader オプション",
-    popupPageTitle: "X Image Downloader",
+    optionsPageTitle: "X Media Downloader オプション",
+    popupPageTitle: "X Media Downloader",
     settingsTitle: "設定",
-    appSubtitle: "X/Twitter の画像をローカルフォルダーに保存します。",
+    appSubtitle: "X/Twitter の画像、動画、GIF風メディアをローカルフォルダーに保存します。",
     languageLabel: "言語",
     languageAuto: "自動",
     languageJapanese: "日本語",
