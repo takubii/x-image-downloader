@@ -6,6 +6,7 @@ export type XVideoPageCandidate = {
   mediaId: string;
   videoUrl: string;
   mediaType: XVideoMediaType;
+  posterUrl?: string;
   bitrate?: number;
 };
 
@@ -33,6 +34,7 @@ export function normalizeXVideoPageCandidate(value: unknown): XVideoPageCandidat
 
   const tweetId = getStringValue(value.tweetId);
   const bitrate = value.bitrate;
+  const posterUrl = getXPosterUrl(getStringValue(value.posterUrl) || "");
 
   if (tweetId && (!isValidXId(tweetId) || !/^\d+$/.test(tweetId))) {
     return null;
@@ -47,8 +49,23 @@ export function normalizeXVideoPageCandidate(value: unknown): XVideoPageCandidat
     mediaId,
     videoUrl,
     mediaType,
+    posterUrl,
     bitrate,
   };
+}
+
+function getXPosterUrl(value: string): string | undefined {
+  try {
+    const url = new URL(value);
+
+    if (url.protocol !== "https:" || url.hostname !== "pbs.twimg.com") {
+      return undefined;
+    }
+
+    return url.toString();
+  } catch {
+    return undefined;
+  }
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {

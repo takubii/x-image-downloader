@@ -3,6 +3,7 @@ export type XVideoPageCandidate = {
   mediaId: string;
   videoUrl: string;
   mediaType: "video" | "gif";
+  posterUrl?: string;
   bitrate?: number;
 };
 
@@ -35,6 +36,7 @@ export function extractXVideoCandidatesFromApiJson(value: unknown): XVideoPageCa
         apiMediaType: getStringValue(record.type),
         videoUrl: variant.url,
       }),
+      posterUrl: getPosterUrlFromRecord(record),
       bitrate: variant.bitrate,
     });
   });
@@ -104,6 +106,26 @@ function getMediaIdFromRecord(record: Record<string, unknown>): string | null {
   }
 
   return null;
+}
+
+function getPosterUrlFromRecord(record: Record<string, unknown>): string | undefined {
+  const mediaUrl = getStringValue(record.media_url_https);
+
+  if (!mediaUrl) {
+    return undefined;
+  }
+
+  try {
+    const url = new URL(mediaUrl.replaceAll("\\/", "/").replaceAll("&amp;", "&"));
+
+    if (url.protocol !== "https:" || url.hostname !== "pbs.twimg.com") {
+      return undefined;
+    }
+
+    return url.toString();
+  } catch {
+    return undefined;
+  }
 }
 
 function findTweetId(ancestors: readonly Record<string, unknown>[]): string | undefined {

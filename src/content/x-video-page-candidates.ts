@@ -14,7 +14,7 @@ export type XVideoPageCandidateMessage = {
 };
 
 type MissingXVideoCandidateLog = {
-  reason: "missing-media-id" | "missing-candidate";
+  reason: "missing-media-id" | "missing-candidate" | "ambiguous-tweet-candidates";
   tweetId?: string;
   mediaId: string | null;
   posterUrl?: string;
@@ -25,6 +25,10 @@ type MissingXVideoCandidateLog = {
 type XVideoPageCandidateStore = {
   cache(candidates: readonly XVideoPageCandidate[]): void;
   find(video: HTMLVideoElement, statusInfo: XVideoStatusInfo): XVideoPageCandidate | null;
+  findByTweetAndPoster(
+    statusInfo: XVideoStatusInfo,
+    posterUrl?: string,
+  ): XVideoPageCandidate | null;
   markMissing(
     video: HTMLVideoElement,
     statusInfo: XVideoStatusInfo,
@@ -33,6 +37,12 @@ type XVideoPageCandidateStore = {
 
 type XVideoPageCandidateStoreOptions = {
   getPageUrl?: () => string;
+};
+
+type XVideoCandidateIndex = {
+  byMediaKey: Map<string, XVideoPageCandidate>;
+  byPoster: Map<string, XVideoPageCandidate>;
+  byTweet: Map<string, XVideoPageCandidate[]>;
 };
 
 const PAGE_MESSAGE_SOURCE = "x-media-downloader-page";
@@ -92,34 +102,30 @@ export function parseXVideoPageCandidateMessage(value: unknown): XVideoPageCandi
 export function createXVideoPageCandidateStore(
   options: XVideoPageCandidateStoreOptions = {},
 ): XVideoPageCandidateStore {
-  const candidates = new Map<string, XVideoPageCandidate>();
+  const index: XVideoCandidateIndex = {
+    byMediaKey: new Map(),
+    byPoster: new Map(),
+    byTweet: new Map(),
+  };
   const missingLogs = new Set<string>();
   const getPageUrl = options.getPageUrl || (() => location.href);
 
   return {
     cache(values) {
       for (const value of values) {
-        setBoundedMapValue(
-          candidates,
-          getMediaCacheKey(value.mediaId),
-          value,
-          MAX_PAGE_VIDEO_CANDIDATE_CACHE_ENTRIES,
-        );
-
-        if (value.tweetId) {
-          setBoundedMapValue(
-            candidates,
-            getTweetMediaCacheKey(value.tweetId, value.mediaId),
-            value,
-            MAX_PAGE_VIDEO_CANDIDATE_CACHE_ENTRIES,
-          );
-        }
+        cacheCandidate(index, value);
       }
     },
 
     find(video, statusInfo) {
-      for (const cacheKey of getVideoResolutionCacheKeys(video, statusInfo)) {
-        const candidate = candidates.get(cacheKey);
+      const mediaId = video.poster ? getXVideoMediaId(video.poster) : null;
+
+      if (!mediaId && statusInfo.tweetId) {
+        return findByTweetCandidate(index, statusInfo, video.poster);
+      }
+
+      for (const cacheKey of getVideoResolutionCacheKeys(mediaId, statusInfo)) {
+        const candidate = index.byMediaKey.get(cacheKey);
 
         if (candidate) {
           return candidate;
@@ -129,8 +135,19 @@ export function createXVideoPageCandidateStore(
       return null;
     },
 
+    findByTweetAndPoster(statusInfo, posterUrl) {
+      if (!statusInfo.tweetId || !posterUrl) {
+        return null;
+      }
+
+      return findByPosterCandidate(index, statusInfo, posterUrl);
+    },
+
     markMissing(video, statusInfo) {
       const mediaId = video.poster ? getXVideoMediaId(video.poster) : null;
+      const tweetCandidateCount = statusInfo.tweetId
+        ? index.byTweet.get(statusInfo.tweetId)?.length || 0
+        : 0;
       const logKey = mediaId
         ? statusInfo.tweetId
           ? getTweetMediaCacheKey(statusInfo.tweetId, mediaId)
@@ -144,7 +161,7 @@ export function createXVideoPageCandidateStore(
       addBoundedSetValue(missingLogs, logKey, MAX_MISSING_VIDEO_LOG_ENTRIES);
 
       return {
-        reason: mediaId ? "missing-candidate" : "missing-media-id",
+        reason: getMissingCandidateReason(mediaId, tweetCandidateCount),
         tweetId: statusInfo.tweetId,
         mediaId,
         posterUrl: video.poster || undefined,
@@ -155,12 +172,44 @@ export function createXVideoPageCandidateStore(
   };
 }
 
+function cacheCandidate(index: XVideoCandidateIndex, candidate: XVideoPageCandidate): void {
+  setBoundedMapValue(
+    index.byMediaKey,
+    getMediaCacheKey(candidate.mediaId),
+    candidate,
+    MAX_PAGE_VIDEO_CANDIDATE_CACHE_ENTRIES,
+  );
+
+  if (candidate.tweetId) {
+    setBoundedMapValue(
+      index.byMediaKey,
+      getTweetMediaCacheKey(candidate.tweetId, candidate.mediaId),
+      candidate,
+      MAX_PAGE_VIDEO_CANDIDATE_CACHE_ENTRIES,
+    );
+    appendTweetCandidate(index.byTweet, candidate);
+  }
+
+  if (candidate.posterUrl) {
+    const posterKey = getPosterCacheKey(candidate.posterUrl);
+
+    if (!posterKey) {
+      return;
+    }
+
+    setBoundedMapValue(
+      index.byPoster,
+      posterKey,
+      candidate,
+      MAX_PAGE_VIDEO_CANDIDATE_CACHE_ENTRIES,
+    );
+  }
+}
+
 function getVideoResolutionCacheKeys(
-  video: HTMLVideoElement,
+  mediaId: string | null,
   statusInfo: XVideoStatusInfo,
 ): string[] {
-  const mediaId = video.poster ? getXVideoMediaId(video.poster) : null;
-
   if (!mediaId) {
     return [];
   }
@@ -179,13 +228,98 @@ function getMediaCacheKey(mediaId: string): string {
   return `media:${mediaId}`;
 }
 
+function getPosterCacheKey(posterUrl: string): string | null {
+  try {
+    const url = new URL(posterUrl);
+    url.search = "";
+    url.hash = "";
+    url.pathname = url.pathname.replace(/\.(?:jpe?g|png|webp)$/i, "");
+    return url.toString();
+  } catch {
+    return null;
+  }
+}
+
 function getMissingMediaIdLogKey(video: HTMLVideoElement, statusInfo: XVideoStatusInfo): string {
-  return [
-    "missing-media-id",
-    statusInfo.tweetId || "",
-    video.poster || "",
-    video.currentSrc || video.src || "",
-  ].join(":");
+  return ["missing-media-id", statusInfo.tweetId || "", video.poster || ""].join(":");
+}
+
+function getMissingCandidateReason(
+  mediaId: string | null,
+  tweetCandidateCount: number,
+): MissingXVideoCandidateLog["reason"] {
+  if (mediaId) {
+    return "missing-candidate";
+  }
+
+  return tweetCandidateCount > 1 ? "ambiguous-tweet-candidates" : "missing-media-id";
+}
+
+function appendTweetCandidate(
+  tweetCandidates: Map<string, XVideoPageCandidate[]>,
+  candidate: XVideoPageCandidate,
+): void {
+  if (!candidate.tweetId) {
+    return;
+  }
+
+  const current = tweetCandidates.get(candidate.tweetId) || [];
+
+  if (
+    current.some(
+      (value) => value.mediaId === candidate.mediaId && value.videoUrl === candidate.videoUrl,
+    )
+  ) {
+    return;
+  }
+
+  setBoundedMapValue(
+    tweetCandidates,
+    candidate.tweetId,
+    [...current, candidate],
+    MAX_PAGE_VIDEO_CANDIDATE_CACHE_ENTRIES,
+  );
+}
+
+function getSingleTweetCandidate(
+  tweetCandidates: Map<string, XVideoPageCandidate[]>,
+  tweetId: string,
+): XVideoPageCandidate | null {
+  const candidates = tweetCandidates.get(tweetId) || [];
+
+  return candidates.length === 1 ? candidates[0] : null;
+}
+
+function findByTweetCandidate(
+  index: XVideoCandidateIndex,
+  statusInfo: XVideoStatusInfo,
+  posterUrl?: string,
+): XVideoPageCandidate | null {
+  if (!statusInfo.tweetId) {
+    return null;
+  }
+
+  if (posterUrl) {
+    const posterKey = getPosterCacheKey(posterUrl);
+    const candidate = posterKey ? index.byPoster.get(posterKey) : null;
+
+    if (candidate?.tweetId === statusInfo.tweetId) {
+      return candidate;
+    }
+  }
+
+  return getSingleTweetCandidate(index.byTweet, statusInfo.tweetId);
+}
+
+function findByPosterCandidate(
+  index: XVideoCandidateIndex,
+  statusInfo: XVideoStatusInfo,
+  posterUrl: string,
+): XVideoPageCandidate | null {
+  const posterKey = getPosterCacheKey(posterUrl);
+  const candidate = posterKey ? index.byPoster.get(posterKey) : null;
+
+  return candidate && candidate.tweetId === statusInfo.tweetId ? candidate : null;
 }
 
 function setBoundedMapValue<TKey, TValue>(

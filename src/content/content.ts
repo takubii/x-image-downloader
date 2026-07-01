@@ -1,7 +1,13 @@
 import { getContentImageKey } from "./image-key";
 import { getEligibleImage, getVisibleImageRect, isPointInsideRect } from "./image-visibility";
+import {
+  findHoveredMediaPreviewElement,
+  getPreviewPosterUrl,
+  isMediaTabPath,
+} from "./media-preview-target";
 import { createImageSaveStateStore } from "./save-state";
 import { createSaveButton } from "./save-button";
+import { findStatusInfo } from "./status-info";
 import { getXVideoKey, resolveXVideoCandidate } from "./video-target";
 import {
   createXVideoPageCandidateStore,
@@ -37,7 +43,7 @@ type ImageMediaTarget = {
 
 type VideoMediaTarget = {
   kind: "video";
-  element: HTMLVideoElement;
+  element: Element;
   key: string;
   info: SaveVideoPayload;
 };
@@ -263,6 +269,18 @@ function buildImageInfo(image: HTMLImageElement): ImageInfo {
 }
 
 function getEligibleMediaTarget(event: MouseEvent): MediaTarget | null {
+  const video = getEligibleVideoTarget(event);
+
+  if (video) {
+    return video;
+  }
+
+  const mediaTabVideo = getEligibleMediaTabVideoTarget(event);
+
+  if (mediaTabVideo) {
+    return mediaTabVideo;
+  }
+
   const image = getEligibleImage(event.target);
 
   if (image) {
@@ -273,7 +291,7 @@ function getEligibleMediaTarget(event: MouseEvent): MediaTarget | null {
     };
   }
 
-  return getEligibleVideoTarget(event);
+  return null;
 }
 
 function getEligibleVideoTarget(event: MouseEvent): VideoMediaTarget | null {
@@ -314,10 +332,10 @@ function getEligibleVideoTarget(event: MouseEvent): VideoMediaTarget | null {
   return null;
 }
 
-function buildVideoMediaTarget(video: HTMLVideoElement, info: SaveVideoPayload): VideoMediaTarget {
+function buildVideoMediaTarget(element: Element, info: SaveVideoPayload): VideoMediaTarget {
   return {
     kind: "video",
-    element: video,
+    element,
     key: getXVideoKey(info.videoUrl),
     info,
   };
@@ -332,15 +350,57 @@ function buildVideoInfo(
   },
   statusInfo: { author?: string; tweetId?: string },
 ): SaveVideoPayload {
+  return buildVideoInfoFromCandidate(candidate, statusInfo, video.poster || undefined);
+}
+
+function buildVideoInfoFromCandidate(
+  candidate: {
+    videoUrl: string;
+    mediaType: "video" | "gif";
+    bitrate?: number;
+  },
+  statusInfo: { author?: string; tweetId?: string },
+  posterUrl?: string,
+): SaveVideoPayload {
   return {
     videoUrl: candidate.videoUrl,
     pageUrl: location.href,
     mediaType: candidate.mediaType,
-    posterUrl: video.poster || undefined,
+    posterUrl,
     bitrate: candidate.bitrate,
     author: statusInfo.author,
     tweetId: statusInfo.tweetId,
   };
+}
+
+function getEligibleMediaTabVideoTarget(event: MouseEvent): VideoMediaTarget | null {
+  if (!isMediaTabPath(location.pathname) || !(event.target instanceof Element)) {
+    return null;
+  }
+
+  const preview = findHoveredMediaPreviewElement({
+    target: event.target,
+    pointerX: event.clientX,
+    pointerY: event.clientY,
+    minSize: MIN_VIDEO_SIZE,
+  });
+
+  if (!preview) {
+    return null;
+  }
+
+  const statusInfo = findStatusInfo(preview);
+  const posterUrl = getPreviewPosterUrl(preview);
+  const candidate = pageVideoCandidates.findByTweetAndPoster(statusInfo, posterUrl);
+
+  if (!candidate) {
+    return null;
+  }
+
+  return buildVideoMediaTarget(
+    preview,
+    buildVideoInfoFromCandidate(candidate, statusInfo, posterUrl || candidate.posterUrl),
+  );
 }
 
 function getCachedResolvedVideoInfo(input: {
@@ -468,15 +528,15 @@ function getVisibleMediaRect(target: MediaTarget): DOMRect | null {
     return getVisibleImageRect(target.element);
   }
 
-  return getVisibleVideoRect(target.element);
+  return getVisibleElementRect(target.element);
 }
 
-function getVisibleVideoRect(video: HTMLVideoElement): DOMRect | null {
-  if (!video.isConnected) {
+function getVisibleElementRect(element: Element): DOMRect | null {
+  if (!element.isConnected) {
     return null;
   }
 
-  const rect = video.getBoundingClientRect();
+  const rect = element.getBoundingClientRect();
 
   if (rect.width < MIN_VIDEO_SIZE || rect.height < MIN_VIDEO_SIZE) {
     return null;
@@ -492,32 +552,6 @@ function getVisibleVideoRect(video: HTMLVideoElement): DOMRect | null {
   }
 
   return rect;
-}
-
-function findStatusInfo(element: Element): {
-  author?: string;
-  tweetId?: string;
-} {
-  const article = element.closest("article");
-  const candidates = [
-    ...Array.from(
-      (article || document).querySelectorAll<HTMLAnchorElement>('a[href*="/status/"]'),
-    ).map((anchor) => anchor.getAttribute("href") || ""),
-    location.pathname,
-  ];
-
-  for (const candidate of candidates) {
-    const match = candidate.match(/\/([^/?#]+)\/status\/(\d+)/);
-
-    if (match) {
-      return {
-        author: match[1],
-        tweetId: match[2],
-      };
-    }
-  }
-
-  return {};
 }
 
 async function logContent(level: DebugLogLevel, message: string, details?: unknown): Promise<void> {
