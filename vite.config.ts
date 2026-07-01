@@ -15,6 +15,7 @@ export default defineConfig(({ mode }) => ({
       input: {
         background: inputPath("src/background/service-worker.ts"),
         content: inputPath("src/content/content.ts"),
+        xVideoPageObserver: inputPath("src/content/x-video-page-observer.ts"),
         popup: inputPath("src/popup/popup.html"),
         options: inputPath("src/options/options.html"),
         offscreen: inputPath("src/offscreen/offscreen.html"),
@@ -23,6 +24,7 @@ export default defineConfig(({ mode }) => ({
         entryFileNames: (chunk) => {
           if (chunk.name === "background") return "background.js";
           if (chunk.name === "content") return "content.js";
+          if (chunk.name === "xVideoPageObserver") return "x-video-page-observer.js";
           return "assets/[name].js";
         },
         chunkFileNames: "assets/[name].js",

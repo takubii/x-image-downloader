@@ -25,6 +25,12 @@
   "content_scripts": [
     {
       "matches": ["https://x.com/*", "https://twitter.com/*"],
+      "js": ["x-video-page-observer.js"],
+      "run_at": "document_start",
+      "world": "MAIN"
+    },
+    {
+      "matches": ["https://x.com/*", "https://twitter.com/*"],
       "js": ["content.js"],
       "run_at": "document_idle"
     }
@@ -32,9 +38,6 @@
   "host_permissions": [
     "https://x.com/*",
     "https://twitter.com/*",
-    "https://api.x.com/*",
-    "https://api.twitter.com/*",
-    "https://abs.twimg.com/*",
     "https://pbs.twimg.com/*",
     "https://video.twimg.com/*"
   ],

@@ -6,7 +6,7 @@ import {
 } from "../shared/debug-log";
 import type { RuntimeMessage, SaveMediaResponse } from "../shared/messages";
 import { getSettings } from "../shared/settings";
-import { resolveXVideoFromApi } from "./x-video-api";
+import { isValidSaveVideoPayload } from "../shared/video-url";
 
 const OFFSCREEN_DOCUMENT_PATH = "src/offscreen/offscreen.html";
 
@@ -36,27 +36,21 @@ chrome.runtime.onMessage.addListener((message: RuntimeMessage, _sender, sendResp
     return false;
   }
 
-  if (message.type === "RESOLVE_X_VIDEO") {
-    void logBackground("debug", "Resolving X video from GraphQL API.", {
-      tweetId: message.payload.tweetId,
-      mediaId: message.payload.mediaId,
-      pageUrl: message.payload.pageUrl,
-    });
-
-    resolveXVideoFromApi(message.payload)
-      .then(sendResponse)
-      .catch((error: unknown) => {
-        void logBackground("warn", "X video API resolution failed.", error);
-        sendResponse({
-          ok: false,
-          error: getErrorMessage(error),
-        });
-      });
-
-    return true;
+  if (message.type !== "SAVE_IMAGE" && message.type !== "SAVE_VIDEO") {
+    return false;
   }
 
-  if (message.type !== "SAVE_IMAGE" && message.type !== "SAVE_VIDEO") {
+  if (message.type === "SAVE_VIDEO" && !isValidSaveVideoPayload(message.payload)) {
+    void logBackground("warn", "Rejected invalid video/GIF save request.", {
+      videoUrl: message.payload.videoUrl,
+      mediaType: message.payload.mediaType,
+      pageUrl: message.payload.pageUrl,
+    });
+    sendResponse({
+      ok: false,
+      error: "Invalid video save request.",
+      reason: "download-failed",
+    } satisfies SaveMediaResponse);
     return false;
   }
 

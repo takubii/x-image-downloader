@@ -19,24 +19,6 @@ export type SaveVideoPayload = {
   tweetId?: string;
 };
 
-export type ResolveXVideoPayload = {
-  tweetId: string;
-  mediaId?: string;
-  pageUrl: string;
-  mainBundleUrls: string[];
-};
-
-export type ResolveXVideoResponse =
-  | {
-      ok: true;
-      candidate: {
-        videoUrl: string;
-        mediaType: "video" | "gif";
-        bitrate?: number;
-      };
-    }
-  | { ok: false; error: string };
-
 type SaveFailureReason = "folder-not-selected" | "permission-denied" | "download-failed";
 
 export type SaveMediaResponse =
@@ -57,7 +39,6 @@ export type DebugLogEntry = {
 export type RuntimeMessage =
   | { type: "SAVE_IMAGE"; payload: SaveImagePayload }
   | { type: "SAVE_VIDEO"; payload: SaveVideoPayload }
-  | { type: "RESOLVE_X_VIDEO"; payload: ResolveXVideoPayload }
   | {
       type: "SAVE_IMAGE_OFFSCREEN";
       payload: SaveImagePayload;

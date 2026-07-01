@@ -15,7 +15,7 @@ import type {
   SaveVideoPayload,
 } from "../shared/messages";
 import type { Settings } from "../shared/settings";
-import { getVideoKey, getVideoMetadata } from "../shared/video-url";
+import { getVideoKey, getVideoMetadata, isValidSaveVideoPayload } from "../shared/video-url";
 
 chrome.runtime.onMessage.addListener((message: RuntimeMessage, _sender, sendResponse) => {
   if (message.type === "SAVE_IMAGE_OFFSCREEN" && message.target === "offscreen") {
@@ -35,6 +35,20 @@ chrome.runtime.onMessage.addListener((message: RuntimeMessage, _sender, sendResp
   }
 
   if (message.type === "SAVE_VIDEO_OFFSCREEN" && message.target === "offscreen") {
+    if (!isValidSaveVideoPayload(message.payload)) {
+      void logOffscreen("warn", "Rejected invalid offscreen video/GIF save request.", {
+        videoUrl: message.payload.videoUrl,
+        mediaType: message.payload.mediaType,
+        pageUrl: message.payload.pageUrl,
+      });
+      sendResponse({
+        ok: false,
+        error: "Invalid video save request.",
+        reason: "download-failed",
+      } satisfies SaveMediaResponse);
+      return false;
+    }
+
     void logOffscreen("info", "Offscreen video/GIF save request received.", {
       videoUrl: message.payload.videoUrl,
       pageUrl: message.payload.pageUrl,
