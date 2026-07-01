@@ -26,14 +26,14 @@ describe("getVideoMetadata", () => {
     });
   });
 
-  test("uses GIF extension for GIF-style media", () => {
+  test("uses MP4 extension for GIF-style media because X serves it as MP4", () => {
     expect(
       getVideoMetadata({
         videoUrl: "https://video.twimg.com/tweet_video/example_id.mp4",
         pageUrl: "https://x.com/example/status/1730942564943982592",
         mediaType: "gif",
       }).ext,
-    ).toBe("gif");
+    ).toBe("mp4");
   });
 });
 
