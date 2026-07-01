@@ -8,6 +8,7 @@ import {
 import { createImageSaveStateStore } from "./save-state";
 import { createSaveButton } from "./save-button";
 import { resolveXVideoCandidate } from "./video-target";
+import { isLocalBuild } from "../shared/build-flags";
 import type { SaveMediaResponse, SaveVideoPayload } from "../shared/messages";
 import { getVideoKey } from "../shared/video-url";
 
@@ -388,6 +389,10 @@ function findStatusInfo(element: Element): {
 }
 
 async function logContent(level: DebugLogLevel, message: string, details?: unknown): Promise<void> {
+  if (!isLocalBuild) {
+    return;
+  }
+
   const entry: DebugLogEntry = {
     timestamp: new Date().toISOString(),
     source: "content",
